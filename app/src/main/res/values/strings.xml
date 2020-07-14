@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">NSD</string>
+    <string name="publish">Publish</string>
+    <string name="scan">Scan</string>
+    <string name="service_name">Service Name</string>
+    <string name="service_type">Service Type</string>
+    <string name="ip_address">Ip Address</string>
+    <string name="port">Port</string>
+</resources>
