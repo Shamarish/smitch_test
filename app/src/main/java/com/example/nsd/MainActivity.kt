@@ -5,6 +5,8 @@ import android.net.nsd.NsdServiceInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nsd.databinding.ActivityMainBinding
@@ -16,6 +18,7 @@ class MainActivity : AppCompatActivity(), DiscoveryHelper.ActivityListener {
     private lateinit var serviceDataList: ArrayList<NsdServiceInfo?>
     private lateinit var recyclerView: RecyclerView
     private var discoveryHelper: DiscoveryHelper? = null
+    private lateinit var myModel: MainViewModel
 
     private val resolveListener = object : NsdManager.ResolveListener{
         override fun onResolveFailed(serviceInfo: NsdServiceInfo?, errorCode: Int) {
@@ -25,13 +28,7 @@ class MainActivity : AppCompatActivity(), DiscoveryHelper.ActivityListener {
         override fun onServiceResolved(serviceInfo: NsdServiceInfo?) {
             Log.d(tag, "onServiceResolved: ")
             runOnUiThread {
-                for(serviceData in serviceDataList){
-                    if(serviceData?.host?.hostAddress.equals(serviceInfo?.host?.hostAddress)){
-                        return@runOnUiThread
-                    }
-                }
-                serviceDataList.add(serviceInfo)
-                recyclerView.adapter?.notifyDataSetChanged()
+                myModel.setService(serviceInfo)
             }
         }
 
@@ -48,6 +45,19 @@ class MainActivity : AppCompatActivity(), DiscoveryHelper.ActivityListener {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = ServiceAdapter(serviceDataList)
         }
+
+        myModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
+        myModel.getServices().observe(this, Observer {
+            for(serviceData in serviceDataList){
+                if(serviceData?.host?.hostAddress.equals(it?.host?.hostAddress)){
+                    return@Observer
+                }
+            }
+            serviceDataList.add(it)
+            recyclerView.adapter?.notifyDataSetChanged()
+        })
+
 
         discoveryHelper = DiscoveryHelper(this@MainActivity, resolveListener)
 
